@@ -112,8 +112,11 @@ router.post('/authentication', async (req, res) => {
     });
 });
 
+const jwt = require('jsonwebtoken'); // Import jwt
 
-// Endpoint to verify OTP
+
+
+// Endpoint to verify OTP and generate JWT
 router.post('/verify-otp', (req, res) => {
     const { contactNumber, otp } = req.body;
 
@@ -133,7 +136,8 @@ router.post('/verify-otp', (req, res) => {
     LEFT JOIN city ON user.cityId = city.cityId
     WHERE user.contactNumber = ?
     LIMIT 1
-`;
+    `;
+
     dbConfig.query(query, [contactNumber], (err, results) => {
         if (err) {
             return res.status(500).json({ error: err.message });
@@ -146,16 +150,65 @@ router.post('/verify-otp', (req, res) => {
         const user = results[0];
         const currentDateTime = new Date();
 
+        // Check if OTP matches
         if (user.otp != otp) {
             return res.status(400).json({ error: 'Invalid OTP', status: "false" });
         }
 
+        // Check if OTP is expired
         if (currentDateTime > user.otp_expiry) {
             return res.status(400).json({ error: 'OTP expired', status: "false" });
         }
 
-        return res.status(200).json({ message: 'Authentication successful', status: "true", user: { userId: user.userId, parentId: user.parentId, firstName: user.firstName, lastName: user.lastName, contactNumber: user.contactNumber, email: user.email, age: user.age, gender: user.gender, bloodGroup: user.bloodGroup, education: user.education, address: user.address, countryId: user.countryId, stateId: user.stateId, cityId: user.cityId, createdDate: user.createdDate, updatedDate: user.updatedDate, otp: user.otp, userType: user.userType, photo: user.photo, dateOfBirth: user.dateOfBirth, countryName: user.countryName, stateName: user.stateName, cityName: user.cityName } });
+        // OTP is valid, generate JWT token
+        const token = jwt.sign(
+            { userId: user.userId, email: user.email }, // Payload now includes email and userId
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '7d' } // Token will expire in 7 days
+        );
+
+        // Use INSERT ... ON DUPLICATE KEY UPDATE to handle token creation or update
+        const insertOrUpdateTokenQuery = `
+            INSERT INTO token (userId, token) VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE token = ?`;
+        dbConfig.query(insertOrUpdateTokenQuery, [user.userId, token, token], (err, tokenResult) => {
+            if (err) {
+                return res.status(500).json({ error: 'Failed to store token', status: "false" });
+            }
+
+            // Send user data and token in response
+            return res.status(200).json({
+                message: 'Authentication successful',
+                status: "true",
+                token,
+                user: {
+                    userId: user.userId,
+                    parentId: user.parentId,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    contactNumber: user.contactNumber,
+                    email: user.email,
+                    age: user.age,
+                    gender: user.gender,
+                    bloodGroup: user.bloodGroup,
+                    education: user.education,
+                    address: user.address,
+                    countryId: user.countryId,
+                    stateId: user.stateId,
+                    cityId: user.cityId,
+                    createdDate: user.createdDate,
+                    updatedDate: user.updatedDate,
+                    userType: user.userType,
+                    photo: user.photo,
+                    dateOfBirth: user.dateOfBirth,
+                    countryName: user.countryName,
+                    stateName: user.stateName,
+                    cityName: user.cityName
+                }
+            });
+        });
     });
 });
 
 module.exports = router;
+

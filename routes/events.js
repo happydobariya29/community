@@ -4,7 +4,7 @@ const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
 const multer = require('multer');
 const path = require('path');
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -39,7 +39,7 @@ const upload = multer({
 ]);
 
 // API for adding an event
-router.post('/addevent', upload, (req, res) => {
+router.post('/addevent',IsUserAuthicated, upload, (req, res) => {
     const { name, type, date, description, addedBy, link } = req.body;  // Extract addedBy from the request body
     const photo = req.file ? `uploads/${req.file.filename}` : null;
 
@@ -87,7 +87,7 @@ router.post('/addevent', upload, (req, res) => {
 });
 
 
-router.put('/editevent/:eventId', (req, res) => {
+router.put('/editevent/:eventId',IsUserAuthicated, (req, res) => {
     upload(req, res, err => {
         if (err instanceof multer.MulterError) {
             return res.status(400).json({ error: err.message, status: "false" });
@@ -187,7 +187,7 @@ router.put('/editevent/:eventId', (req, res) => {
 
 
 // Endpoint to soft delete an event
-router.put('/deleteevent/:eventId', (req, res) => {
+router.put('/deleteevent/:eventId', IsUserAuthicated,(req, res) => {
     const { eventId } = req.params;
 
     // SQL query to update the event's status to 2 (soft delete)
@@ -214,7 +214,7 @@ router.put('/deleteevent/:eventId', (req, res) => {
 });
 
 //Api for change status
-router.put('/toggleeventstatus/:eventId', (req, res) => {
+router.put('/toggleeventstatus/:eventId',IsUserAuthicated, (req, res) => {
     const { eventId } = req.params;
 
     // SQL query to fetch the current status of the event
@@ -247,7 +247,7 @@ router.put('/toggleeventstatus/:eventId', (req, res) => {
 });
 
 
-router.get('/events', (req, res) => {
+router.get('/events',IsUserAuthicated, (req, res) => {
     const { page = 1, limit = 10, search = '', date = '' } = req.query; // Extract parameters from query
     const offset = (page - 1) * limit;
 
@@ -342,7 +342,7 @@ router.get('/events', (req, res) => {
 
 
 // API for event details
-router.get('/eventdetails', (req, res) => {
+router.get('/eventdetails',IsUserAuthicated ,(req, res) => {
     const { eventId } = req.query;
 
     // Validate if eventId is provided

@@ -6,10 +6,10 @@ const csvParser = require('csv-parser');
 const fs = require('fs');
 const dbConfig = require("./dbconfig");
 const upload = multer({ dest: 'uploads/' }).single('csvFile');
-
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
+const userRole = require('../Middlewares/authorizeUserType')
 // Endpoint to handle CSV file upload and user data insertion
-router.post('/addusersfromcsv', (req, res) => {
+router.post('/addusersfromcsv', IsUserAuthicated,userRole ,(req, res) => {
     upload(req, res, async (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: err.message });
@@ -113,7 +113,7 @@ router.post('/addusersfromcsv', (req, res) => {
 
 
 // Endpoint to handle CSV file upload and user data insertion with parentId
-router.post('/addusersfromcsvbyId', (req, res) => {
+router.post('/addusersfromcsvbyId',  IsUserAuthicated,userRole ,(req, res) => {
     const { parentId } = req.query;
 
     // Validate the parentId
@@ -220,7 +220,7 @@ router.post('/addusersfromcsvbyId', (req, res) => {
 
 
 // Endpoint to handle CSV file upload and event data insertion
-router.post('/addeventsfromcsv', (req, res) => {
+router.post('/addeventsfromcsv',  IsUserAuthicated,userRole , (req, res) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: err.message });
@@ -290,7 +290,7 @@ router.post('/addeventsfromcsv', (req, res) => {
 });
 
 // Endpoint to upload CSV file and add family members
-router.post('/addfamilymembersfromcsv', (req, res) => {
+router.post('/addfamilymembersfromcsv', IsUserAuthicated,userRole , (req, res) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: err.message });
@@ -378,7 +378,7 @@ router.post('/addfamilymembersfromcsv', (req, res) => {
 });
 
 // Endpoint to handle CSV file upload and add announcements
-router.post('/addannouncementsfromcsv', (req, res) => {
+router.post('/addannouncementsfromcsv', IsUserAuthicated, (req, res) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: err.message });
@@ -450,7 +450,7 @@ router.post('/addannouncementsfromcsv', (req, res) => {
 });
 
 // Endpoint to handle CSV file upload and add magazines
-router.post('/addmagazinesfromcsv', (req, res) => {
+router.post('/addmagazinesfromcsv',IsUserAuthicated, (req, res) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: err.message });
@@ -521,7 +521,7 @@ router.post('/addmagazinesfromcsv', (req, res) => {
 
 
 // Endpoint to handle CSV file upload and add matrimonial profiles
-router.post('/addmatrimonialsfromcsv', (req, res) => {
+router.post('/addmatrimonialsfromcsv',IsUserAuthicated ,(req, res) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: err.message });
@@ -602,7 +602,7 @@ router.post('/addmatrimonialsfromcsv', (req, res) => {
 });
 
 // Endpoint to handle CSV file upload and add forums
-router.post('/addforumsfromcsv', (req, res) => {
+router.post('/addforumsfromcsv',IsUserAuthicated ,(req, res) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: err.message });
@@ -675,7 +675,7 @@ router.post('/addforumsfromcsv', (req, res) => {
 });
 
 // Endpoint to handle CSV file upload and add business connections
-router.post('/addbusinessesfromcsv', (req, res) => {
+router.post('/addbusinessesfromcsv',IsUserAuthicated ,(req, res) => {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: err.message });

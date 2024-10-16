@@ -4,7 +4,8 @@ const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
 const multer = require('multer');
 const path = require('path');
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
+const userRole = require('../Middlewares/authorizeUserType')
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -36,7 +37,7 @@ function checkFileType(file, cb) {
 }
 
 
-router.post('/adduser', (req, res) => {
+router.post('/adduser', IsUserAuthicated ,userRole,(req, res) => {
     upload(req, res, err => {
         if (err) {
             return res.status(400).send(err);
@@ -117,7 +118,7 @@ router.post('/adduser', (req, res) => {
 
 
 
-router.get('/user-digital-cards', (req, res) => {
+router.get('/user-digital-cards', IsUserAuthicated ,userRole, (req, res) => {
     const { userId } = req.query;
 
     if (!userId) {
@@ -165,7 +166,7 @@ router.get('/user-digital-cards', (req, res) => {
 });
 
 // API for editing a user
-router.put('/edituser/:userId', (req, res) => {
+router.put('/edituser/:userId',IsUserAuthicated ,(req, res) => {
     upload(req, res, err => {
         if (err) {
             return res.status(400).send(err);
@@ -233,7 +234,7 @@ router.put('/edituser/:userId', (req, res) => {
 
 
 // Users list filtered by parentId
-router.get('/allusers', (req, res) => {
+router.get('/allusers', IsUserAuthicated , userRole ,(req, res) => {
     const { parentId } = req.query; // Extract parentId from query parameters
 
     // SQL query to fetch users where status is not 2, and join with countries, states, and cities tables
@@ -266,7 +267,7 @@ router.get('/allusers', (req, res) => {
 });
 
 
-router.get('/users', (req, res) => {
+router.get('/users', IsUserAuthicated ,(req, res) => {
     const { parentId, cityIds, page = 1, limit = 10, search = '' } = req.query; // Extract parentId, cityIds (comma-separated), page, limit, and search from query parameters
     const offset = (page - 1) * limit;
 
@@ -355,7 +356,7 @@ router.get('/users', (req, res) => {
 
 
 // Api for userdetails
-router.get('/userdetails', (req, res) => {
+router.get('/userdetails',IsUserAuthicated ,(req, res) => {
     const { userId } = req.query;
     if (!userId) {
         return res.status(400).json({ error: 'Please Enter User ID', status: "false" });
@@ -422,7 +423,7 @@ router.get('/userdetails', (req, res) => {
 
 
 // Endpoint to soft delete a user
-router.put('/deleteuser/:userId', (req, res) => {
+router.put('/deleteuser/:userId', IsUserAuthicated,(req, res) => {
     const { userId } = req.params;
 
     // SQL query to update the user's status to 2 (soft delete)
@@ -449,7 +450,7 @@ router.put('/deleteuser/:userId', (req, res) => {
 });
 
 //Api for change status
-router.put('/toggleuserstatus/:userId', (req, res) => {
+router.put('/toggleuserstatus/:userId',IsUserAuthicated ,(req, res) => {
     const { userId } = req.params;
 
     // SQL query to fetch the current status of the user
@@ -482,7 +483,7 @@ router.put('/toggleuserstatus/:userId', (req, res) => {
 });
 
 // Endpoint to fetch the list of countries
-router.get('/countries', (req, res) => {
+router.get('/countries', IsUserAuthicated , (req, res) => {
     const query = 'SELECT countryId, name FROM country';
     
     dbConfig.query(query, (err, results) => {
@@ -494,7 +495,7 @@ router.get('/countries', (req, res) => {
 });
 
 
-router.get('/states/:countryId?', (req, res) => {
+router.get('/states/:countryId?', IsUserAuthicated , (req, res) => {
     const countryId = req.params.countryId; // Extract countryId from URL parameters
 
     // SQL query to fetch states based on the presence of countryId
@@ -526,7 +527,7 @@ router.get('/states/:countryId?', (req, res) => {
 });
 
 // Endpoint to fetch the list of cities based on stateId
-router.get('/cities/:stateId?', (req, res) => {
+router.get('/cities/:stateId?', IsUserAuthicated , (req, res) => {
     const stateId = req.params.stateId; // Extract stateId from URL parameters
 
     // SQL query to fetch cities based on the presence of stateId
@@ -585,7 +586,7 @@ router.get('/cities/:stateId?', (req, res) => {
 // });
 
 // Route to handle donor creation
-router.post('/adddonors', (req, res) => {
+router.post('/adddonors', IsUserAuthicated , (req, res) => {
   upload(req, res, (err) => {
     if (err) {
       return res.status(400).json({ error: err, status: 'false' });
@@ -621,7 +622,7 @@ router.post('/adddonors', (req, res) => {
   });
 });
 
-router.get('/donors', (req, res) => {
+router.get('/donors', IsUserAuthicated , (req, res) => {
     // Extract page and limit from query parameters, with default values
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
@@ -675,7 +676,7 @@ router.get('/donors', (req, res) => {
 
 
 
-router.get('/donor/:id', (req, res) => {
+router.get('/donor/:id',IsUserAuthicated ,(req, res) => {
     const { id } = req.params;
     const query = `SELECT * FROM donors WHERE id = ?`;
 
@@ -693,7 +694,7 @@ router.get('/donor/:id', (req, res) => {
 });
 
 // Endpoint for editing a donor
-router.put('/editdonor/:id', (req, res) => {
+router.put('/editdonor/:id',IsUserAuthicated , (req, res) => {
     upload(req, res, (err) => {
         if (err) {
             return res.status(400).json({ error: err, status: 'false' });
@@ -757,7 +758,7 @@ router.put('/editdonor/:id', (req, res) => {
 });
 
 
-router.put('/deletedonor/:id', (req, res) => {
+router.put('/deletedonor/:id', IsUserAuthicated , (req, res) => {
     const { id } = req.params;
 
     // SQL query to soft delete the donor by setting status to 2
@@ -776,7 +777,7 @@ router.put('/deletedonor/:id', (req, res) => {
     });
 });
 
-router.put('/togglestatus/:id', (req, res) => {
+router.put('/togglestatus/:id',IsUserAuthicated , (req, res) => {
     const { id } = req.params;
 
     // Step 1: Get the current status of the donor

@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
 
 // API for adding a forum
-router.post('/addforum', (req, res) => {
+router.post('/addforum',IsUserAuthicated, (req, res) => {
     const { userId, forumCategoryId, title, description } = req.body;
 
     // Validate inputs
@@ -34,7 +35,7 @@ router.post('/addforum', (req, res) => {
 });
 
 // API for editing a forum
-router.put('/editforum/:id', (req, res) => {
+router.put('/editforum/:id',IsUserAuthicated, (req, res) => {
     const { id } = req.params;
     const { userId, forumCategoryId, title, description } = req.body;
 
@@ -70,7 +71,7 @@ router.put('/editforum/:id', (req, res) => {
 });
 
 // Endpoint to soft delete a forum
-router.put('/deleteforum/:id', (req, res) => {
+router.put('/deleteforum/:id',IsUserAuthicated, (req, res) => {
     const { id } = req.params;
 
     // SQL query to update the forum's status to 2 (soft delete)
@@ -97,7 +98,7 @@ router.put('/deleteforum/:id', (req, res) => {
 });
 
 // Endpoint to change the status of a forum
-router.put('/toggleforumstatus/:id', (req, res) => {
+router.put('/toggleforumstatus/:id',IsUserAuthicated, (req, res) => {
     const { id } = req.params;
 
     // SQL query to fetch the current status of the forum
@@ -130,7 +131,7 @@ router.put('/toggleforumstatus/:id', (req, res) => {
 });
 
 // Endpoint to fetch all forums sorted by createdDate in descending order
-router.get('/forums', (req, res) => {
+router.get('/forums', IsUserAuthicated,(req, res) => {
     // SQL query to fetch all forums sorted by createdDate in descending order where status is not 2
     const selectQuery = 'SELECT * FROM forums WHERE status != 2 ORDER BY createdDate DESC';
 
@@ -150,7 +151,7 @@ router.get('/forums', (req, res) => {
 });
 
 // Endpoint to fetch details of a specific forum
-router.get('/forumdetails/:forumId', (req, res) => {
+router.get('/forumdetails/:forumId',IsUserAuthicated, (req, res) => {
     const { forumId } = req.params;
 
     // SQL query to fetch details of the forum by forumId
@@ -186,7 +187,7 @@ router.get('/forumdetails/:forumId', (req, res) => {
 });
 
 // API for adding a forum comment
-router.post('/addcomment', (req, res) => {
+router.post('/addcomment',IsUserAuthicated, (req, res) => {
     const { userId, forumId, parentId, comments } = req.body;
 
     // Validate inputs
@@ -218,7 +219,7 @@ router.post('/addcomment', (req, res) => {
 
 
 // Endpoint to edit a forum comment
-router.put('/editcomment/:commentId', (req, res) => {
+router.put('/editcomment/:commentId', IsUserAuthicated,(req, res) => {
     const { commentId } = req.params;
     const { userId, forumId, parentId, comments } = req.body;
 
@@ -254,7 +255,7 @@ router.put('/editcomment/:commentId', (req, res) => {
 });
 
 // Endpoint to soft delete a forum comment
-router.put('/deletecomment/:commentId', (req, res) => {
+router.put('/deletecomment/:commentId',IsUserAuthicated, (req, res) => {
     const { commentId } = req.params;
 
     // SQL query to update the comment's status to 2 (soft delete)
@@ -281,7 +282,7 @@ router.put('/deletecomment/:commentId', (req, res) => {
 });
 
 // Endpoint to toggle the status of a forum comment
-router.put('/togglecommentstatus/:commentId', (req, res) => {
+router.put('/togglecommentstatus/:commentId',IsUserAuthicated, (req, res) => {
     const { commentId } = req.params;
 
     // SQL query to fetch the current status of the comment
@@ -314,7 +315,7 @@ router.put('/togglecommentstatus/:commentId', (req, res) => {
 });
 
 // Endpoint to list all comments with status not equal to 2, sorted by createdDate in descending order
-router.get('/comments', (req, res) => {
+router.get('/comments', IsUserAuthicated,(req, res) => {
     // SQL query to fetch all comments with status not equal to 2, sorted by createdDate in descending order
     const selectQuery = 'SELECT * FROM forum_comments WHERE status != 2 ORDER BY createdDate DESC';
 
@@ -335,7 +336,7 @@ router.get('/comments', (req, res) => {
 
 
 // Endpoint to get the details of a specific comment
-router.get('/commentdetails/:commentId', (req, res) => {
+router.get('/commentdetails/:commentId',IsUserAuthicated, (req, res) => {
     const { commentId } = req.params;
 
     // Validate input

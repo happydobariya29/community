@@ -4,10 +4,10 @@ const fs = require('fs');
 const { Parser } = require('json2csv');
 const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig"); // Adjust path as per your configuration
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
 
 // Endpoint to export all users as CSV
-router.get('/exportuserscsv', async (req, res) => {
+router.get('/exportuserscsv',IsUserAuthicated, async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
@@ -119,7 +119,7 @@ router.get('/exportuserscsv', async (req, res) => {
 // });
 
 // Endpoint to export all events as CSV
-router.get('/exporteventscsv', async (req, res) => {
+router.get('/exporteventscsv',IsUserAuthicated, async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
@@ -170,7 +170,7 @@ router.get('/exporteventscsv', async (req, res) => {
 });
 
 // Endpoint to export all family details as CSV
-router.get('/exportfamilydetailscsv', async (req, res) => {
+router.get('/exportfamilydetailscsv',IsUserAuthicated, async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
@@ -221,7 +221,7 @@ router.get('/exportfamilydetailscsv', async (req, res) => {
 });
 
 // Endpoint to export all magazine details as CSV
-router.get('/exportmagazinescsv', async (req, res) => {
+router.get('/exportmagazinescsv',IsUserAuthicated, async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
@@ -273,7 +273,7 @@ router.get('/exportmagazinescsv', async (req, res) => {
 
 
 // Endpoint to export all matrimonialprofiles details as CSV
-router.get('/exportmatrimonialprofilescsv', async (req, res) => {
+router.get('/exportmatrimonialprofilescsv',IsUserAuthicated, async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
@@ -324,7 +324,7 @@ router.get('/exportmatrimonialprofilescsv', async (req, res) => {
 });
 
 // Endpoint to export all forum details as CSV
-router.get('/exportforumscsv', async (req, res) => {
+router.get('/exportforumscsv',IsUserAuthicated, async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
@@ -376,7 +376,7 @@ router.get('/exportforumscsv', async (req, res) => {
 
 
 // Endpoint to export all business connection details as CSV
-router.get('/exportbusinessconnectcsv', async (req, res) => {
+router.get('/exportbusinessconnectcsv', IsUserAuthicated,async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
@@ -433,7 +433,7 @@ router.get('/exportbusinessconnectcsv', async (req, res) => {
 });
 
 // Endpoint to export all announcements as CSV
-router.get('/exportannouncementscsv', async (req, res) => {
+router.get('/exportannouncementscsv',IsUserAuthicated, async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
@@ -484,7 +484,7 @@ router.get('/exportannouncementscsv', async (req, res) => {
 });
 
 // Endpoint to export all ads as CSV
-router.get('/exportadscsv', async (req, res) => {
+router.get('/exportadscsv',IsUserAuthicated, async (req, res) => {
     try {
         // Get current timestamp in Indian Standard Time (IST)
         const timestamp = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');

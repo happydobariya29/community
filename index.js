@@ -14,7 +14,7 @@ const familydetailsRouter = require("./routes/familydetails");
 const matrimonialRouter = require("./routes/matrimonial");
 const authRouter = require("./routes/auth");
 const forumRouter = require("./routes/forums");
-const postRouter = require("./routes/post")
+const postRouter = require("./routes/posts");
 const csvRouter = require("./routes/csvtodatabase");
 
 const app = express();
@@ -36,7 +36,7 @@ app.use("/apis", userRouter);
 app.use("/apis", authRouter);
 app.use("/apis", forumRouter);
 app.use("/apis", csvRouter);
-app.use("/apis", postRouter)
+app.use("/apis",postRouter)
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

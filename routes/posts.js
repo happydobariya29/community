@@ -4,7 +4,7 @@ const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
 const multer = require('multer');
 const path = require('path');
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, '../uploads/');
@@ -32,7 +32,7 @@ const upload = multer({
 }).single('photo');  // Assuming only one photo for the post
 
 // API for adding a post
-router.post('/addpost', upload, (req, res) => {
+router.post('/addpost',IsUserAuthicated, upload, (req, res) => {
     const { title, description, addedBy } = req.body;  // Extract addedBy from the request body
     const photo = req.file ? `uploads/${req.file.filename}` : null;
 
@@ -156,7 +156,7 @@ router.post('/addpost', upload, (req, res) => {
 //     });
 // });
 
-router.put('/editpost/:postId', (req, res) => {
+router.put('/editpost/:postId',IsUserAuthicated, (req, res) => {
     // Using multer upload function with error handling
     upload(req, res, (err) => {
         // Handle file upload errors
@@ -244,7 +244,7 @@ router.put('/editpost/:postId', (req, res) => {
 
 
 // Endpoint to soft delete a post
-router.put('/deletepost/:postId', (req, res) => {
+router.put('/deletepost/:postId',IsUserAuthicated, (req, res) => {
     const { postId } = req.params;
 
     // SQL query to update the post's status to 2 (soft delete)
@@ -271,7 +271,7 @@ router.put('/deletepost/:postId', (req, res) => {
 });
 
 // API for changing post status
-router.put('/togglepoststatus/:postId', (req, res) => {
+router.put('/togglepoststatus/:postId', IsUserAuthicated,(req, res) => {
     const { postId } = req.params;
 
     // SQL query to fetch the current status of the post
@@ -304,7 +304,7 @@ router.put('/togglepoststatus/:postId', (req, res) => {
 });
 
 // Endpoint to get posts with pagination, search, and date filtering
-router.get('/posts', (req, res) => {
+router.get('/posts',IsUserAuthicated, (req, res) => {
     const { page = 1, limit = 10, search = '', date = '' } = req.query; // Extract parameters from query
     const offset = (page - 1) * limit;
 
@@ -391,7 +391,7 @@ router.get('/posts', (req, res) => {
 });
 
 // API for post details
-router.get('/postdetails/:postId', (req, res) => {
+router.get('/postdetails/:postId', IsUserAuthicated ,(req, res) => {
     const { postId } = req.params;
 
     // Validate if postId is provided
@@ -487,7 +487,7 @@ router.get('/postdetails/:postId', (req, res) => {
 // });
 
 // API to fetch all posts by addedBy (userId) with search and specific date filter functionality
-router.get('/postsbyuser/:addedBy', (req, res) => {
+router.get('/postsbyuser/:addedBy', IsUserAuthicated ,(req, res) => {
     const { addedBy } = req.params;
     const { search = '', date } = req.query;  // Changed 'createdDate' to 'date'
 

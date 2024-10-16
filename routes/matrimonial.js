@@ -4,9 +4,9 @@ const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
 const app = express();
 app.use(express.json());
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
 // API for adding a matrimonial profile
-router.post('/addmatrimonial', (req, res) => {
+router.post('/addmatrimonial',IsUserAuthicated ,(req, res) => {
     const {
         contactNumber,
         biodata,
@@ -47,7 +47,7 @@ router.post('/addmatrimonial', (req, res) => {
 
 
 // Endpoint to update an existing matrimonial profile's details
-router.put('/editmatrimonial/:matrimonialId', (req, res) => {
+router.put('/editmatrimonial/:matrimonialId', IsUserAuthicated ,(req, res) => {
     const { matrimonialId } = req.params;
     const {
         contactNumber,
@@ -112,7 +112,7 @@ router.put('/editmatrimonial/:matrimonialId', (req, res) => {
 
 
 // Endpoint to soft delete a matrimonial profile
-router.put('/deletematrimonial/:matrimonialId', (req, res) => {
+router.put('/deletematrimonial/:matrimonialId',IsUserAuthicated , (req, res) => {
     const { matrimonialId } = req.params;
 
     // SQL query to update the matrimonial profile's status to 2 (soft delete)
@@ -142,7 +142,7 @@ router.put('/deletematrimonial/:matrimonialId', (req, res) => {
 
 
 // API to toggle the status of a matrimonial profile
-router.put('/togglematrimonialstatus/:matrimonialId', (req, res) => {
+router.put('/togglematrimonialstatus/:matrimonialId',IsUserAuthicated , (req, res) => {
     const { matrimonialId } = req.params;
 
     // SQL query to fetch the current status of the matrimonial profile
@@ -175,7 +175,7 @@ router.put('/togglematrimonialstatus/:matrimonialId', (req, res) => {
 });
 
 // Matrimonial profiles list
-router.get('/matrimonialprofiles', (req, res) => {
+router.get('/matrimonialprofiles',IsUserAuthicated , (req, res) => {
     // SQL query to fetch all matrimonial profiles sorted by createdDate in descending order
     const selectQuery = 'SELECT * FROM matrimonialprofiles WHERE status != 2 ORDER BY createdDate DESC';
 
@@ -195,7 +195,7 @@ router.get('/matrimonialprofiles', (req, res) => {
 });
 
 // API for matrimonial profile details endpoint
-router.get('/matrimonialdetails', (req, res) => {
+router.get('/matrimonialdetails',IsUserAuthicated , (req, res) => {
     const { matrimonialId } = req.body;
 
     if (!matrimonialId) {

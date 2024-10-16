@@ -4,7 +4,7 @@ const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
 const multer = require('multer');
 const path = require('path');
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
 const storageAds = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, '../uploads/'); // Adjust path as needed
@@ -33,7 +33,7 @@ const uploadAds = multer({
 }).single('photo'); // Field name is 'photo'
 
 // API for adding an ad
-router.post('/addads', uploadAds, (req, res) => {
+router.post('/addads', IsUserAuthicated,uploadAds, (req, res) => {
     const { title, type } = req.body;
     const photo = req.file ? `uploads/${req.file.filename}` : null;
 
@@ -66,7 +66,7 @@ router.post('/addads', uploadAds, (req, res) => {
 
 
 // API for ad details
-router.get('/adsdetails', (req, res) => {
+router.get('/adsdetails', IsUserAuthicated,(req, res) => {
     const { adsId } = req.query;
     if (!adsId) {
         return res.status(400).json({ error: 'Please enter ad ID', status: "false" });
@@ -104,7 +104,7 @@ router.get('/adsdetails', (req, res) => {
 
 
 // Endpoint to update an existing ad's details with photo handling
-router.put('/editads/:adsId', (req, res) => {
+router.put('/editads/:adsId', IsUserAuthicated, (req, res) => {
   uploadAds(req, res, err => {
     if (err) {
       return res.status(400).send(err);
@@ -176,7 +176,7 @@ router.put('/editads/:adsId', (req, res) => {
 });
 
 // Endpoint to soft delete an advertisement
-router.put('/deletead/:adsId', (req, res) => {
+router.put('/deletead/:adsId', IsUserAuthicated,(req, res) => {
     const { adsId } = req.params;
 
     // SQL query to update the advertisement's status to 2 (soft delete)
@@ -203,7 +203,7 @@ router.put('/deletead/:adsId', (req, res) => {
 });
 
 // API to toggle the status of an advertisement
-router.put('/toggleadstatus/:adsId', (req, res) => {
+router.put('/toggleadstatus/:adsId', IsUserAuthicated, (req, res) => {
     const { adsId } = req.params;
 
     // SQL query to fetch the current status of the advertisement
@@ -237,7 +237,7 @@ router.put('/toggleadstatus/:adsId', (req, res) => {
 
 
 // Ads list with pagination
-router.get('/ads', (req, res) => {
+router.get('/ads', IsUserAuthicated,(req, res) => {
     const { page = 1, limit = 10 } = req.query; // Extract page and limit from query parameters
     const offset = (page - 1) * limit;
 

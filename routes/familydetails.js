@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
+const userRole = require('../Middlewares/authorizeUserType')
 // API for adding family details
-router.post('/addfamilymember', (req, res) => {
+router.post('/addfamilymember',IsUserAuthicated , userRole ,(req, res) => {
     const { firstName, lastName, contactNumber, email, age, gender, bloodGroup, education, address, countryId, stateId, cityId, userType, dateOfBirth, parentId, photo } = req.body;
 
     // Validate inputs
@@ -37,7 +38,7 @@ router.post('/addfamilymember', (req, res) => {
 });
 
 // Endpoint to update an existing family member's details
-router.put('/editfamilymember/:memberId', (req, res) => {
+router.put('/editfamilymember/:memberId',IsUserAuthicated , userRole , (req, res) => {
     const { memberId } = req.params;
     const { firstName, lastName, contactNumber, email, dateOfBirth, age, gender, bloodGroup, education, address, countryId, stateId, cityId, userId, userType } = req.body;
 
@@ -90,7 +91,7 @@ router.put('/editfamilymember/:memberId', (req, res) => {
 });
 
 // Endpoint to soft delete a family member
-router.put('/deletefamilymember/:memberId', (req, res) => {
+router.put('/deletefamilymember/:memberId', IsUserAuthicated , userRole ,(req, res) => {
     const { memberId } = req.params;
 
     // SQL query to update the family member's status to 2 (soft delete)
@@ -118,7 +119,7 @@ router.put('/deletefamilymember/:memberId', (req, res) => {
 
 
 // API for fetching family members by parentId
-router.get('/getfamilymembers/:parentId', (req, res) => {
+router.get('/getfamilymembers/:parentId',IsUserAuthicated ,  (req, res) => {
     const { parentId } = req.params;
 
     // Validate parentId
@@ -150,7 +151,7 @@ router.get('/getfamilymembers/:parentId', (req, res) => {
 
 
 // API to toggle the status of a family member
-router.put('/togglefamilymemberstatus/:memberId', (req, res) => {
+router.put('/togglefamilymemberstatus/:memberId', IsUserAuthicated , userRole ,(req, res) => {
     const { memberId } = req.params;
 
     // SQL query to fetch the current status of the family member
@@ -184,7 +185,7 @@ router.put('/togglefamilymemberstatus/:memberId', (req, res) => {
 
 
 // API for family member details
-router.get('/familymemberdetails', (req, res) => {
+router.get('/familymemberdetails',IsUserAuthicated , userRole , (req, res) => {
     const { memberId } = req.body;
     if (!memberId) {
         return res.status(400).json({ error: 'Please enter member ID', status: "false" });

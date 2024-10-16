@@ -45,7 +45,7 @@ const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
 const multer = require('multer');
 const path = require('path');
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
 // Configure multer for file storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -74,7 +74,7 @@ const upload = multer({
 }).single('photo');  // Handling only one photo
 
 // API for adding a new business
-router.post('/addbusiness', upload, (req, res) => {
+router.post('/addbusiness',IsUserAuthicated ,upload, (req, res) => {
     const { userId, businessType, businessTitle, contactNumber, address, countryId, stateId, cityId, description, email, website } = req.body;
     const photo = req.file ? `uploads/${req.file.filename}` : null;
 
@@ -240,7 +240,7 @@ router.post('/addbusiness', upload, (req, res) => {
 // });
 
 // API for business connection details
-router.get('/businessdetails', (req, res) => {
+router.get('/businessdetails', IsUserAuthicated,(req, res) => {
     const { businessId } = req.query;
     if (!businessId) {
         return res.status(400).json({ error: 'Please enter business ID', status: "false" });
@@ -582,7 +582,7 @@ router.get('/businessdetails', (req, res) => {
 
 
 // API for fetching all business details associated with a userId, with search and city filtering functionality
-router.get('/business_details', (req, res) => {
+router.get('/business_details',IsUserAuthicated, (req, res) => {
     const { userId, search = '', cityIds = '' } = req.query; // Get userId, search, and cityIds from query parameters
 
     if (!userId) {
@@ -689,7 +689,7 @@ router.get('/business_details', (req, res) => {
 
 
 // Endpoint to soft delete a business connection
-router.put('/deletebusiness/:businessId', (req, res) => {
+router.put('/deletebusiness/:businessId', IsUserAuthicated,(req, res) => {
     const { businessId } = req.params;
 
     // SQL query to update the business connection's status to 2 (soft delete)
@@ -772,7 +772,7 @@ router.put('/deletebusiness/:businessId', (req, res) => {
 // });
 
 // API for editing a business
-router.put('/editbusiness/:businessId', upload, (req, res) => {
+router.put('/editbusiness/:businessId', IsUserAuthicated, upload, (req, res) => {
     const { businessId } = req.params;
     const { businessType, businessTitle, contactNumber, address, countryId, stateId, cityId, description, email, website } = req.body;
     const photo = req.file ? `uploads/${req.file.filename}` : null;
@@ -835,7 +835,7 @@ router.put('/editbusiness/:businessId', upload, (req, res) => {
 });
 
 // Endpoint to fetch business connections with pagination, search, and filters
-router.get('/businesses', (req, res) => {
+    router.get('/businesses', IsUserAuthicated,(req, res) => {
     const { page = 1, limit = 10, search = '', businessType = '', cityIds = '' } = req.query; // Extract query parameters
     const offset = (page - 1) * limit;
 
@@ -951,7 +951,7 @@ router.get('/businesses', (req, res) => {
 
 
 // API to toggle the status of a business connection
-router.put('/togglebusinessstatus/:businessId', (req, res) => {
+router.put('/togglebusinessstatus/:businessId', IsUserAuthicated ,(req, res) => {
     const { businessId } = req.params;
 
     // SQL query to fetch the current status of the business connection
@@ -984,7 +984,7 @@ router.put('/togglebusinessstatus/:businessId', (req, res) => {
 });
 
 // Endpoint to fetch all active business categories
-router.get('/businesscategories', (req, res) => {
+router.get('/businesscategories', IsUserAuthicated,(req, res) => {
     // SQL query to fetch all business categories with status = 1
     const selectQuery = 'SELECT * FROM businesscategory WHERE status = 1;';
 
