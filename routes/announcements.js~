@@ -3,11 +3,11 @@ const router = express.Router();
 const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
 const multer = require('multer');
-
+const IsUserAuthicated = require('../Middlewares/authMiddleware')
 const upload = multer();
 
 // API for adding an announcement
-router.post('/addannouncement', upload.none(), (req, res) => {
+router.post('/addannouncement', IsUserAuthicated,  upload.none(), (req, res) => {
     const { announcementTitle, announcementType, announcementDate, announcementDescription } = req.body;
 
     // Validate inputs
@@ -38,7 +38,7 @@ router.post('/addannouncement', upload.none(), (req, res) => {
 
 
 // API for announcement details
-router.get('/announcementdetails', (req, res) => {
+router.get('/announcementdetails', IsUserAuthicated,(req, res) => {
     const { announcementId } = req.query;
     if (!announcementId) {
         return res.status(400).json({ error: 'Please enter announcement ID', status: "false" });
@@ -76,7 +76,7 @@ router.get('/announcementdetails', (req, res) => {
 });
 
 // Endpoint to update an existing announcement's details
-router.put('/editannouncement/:announcementId', upload.none(), (req, res) => {
+router.put('/editannouncement/:announcementId',IsUserAuthicated ,upload.none(), (req, res) => {
     const { announcementId } = req.params;
     const { announcementTitle, announcementType, announcementDate, announcementDescription } = req.body;
 
@@ -130,7 +130,7 @@ router.put('/editannouncement/:announcementId', upload.none(), (req, res) => {
 
 
 // Endpoint to soft delete an announcement
-router.put('/deleteannouncement/:announcementId', (req, res) => {
+router.put('/deleteannouncement/:announcementId', IsUserAuthicated,(req, res) => {
     const { announcementId } = req.params;
 
     // SQL query to update the announcement's status to 2 (soft delete)
@@ -158,7 +158,7 @@ router.put('/deleteannouncement/:announcementId', (req, res) => {
 
 
 // API to toggle the status of an announcement
-router.put('/toggleannouncementstatus/:announcementId', (req, res) => {
+router.put('/toggleannouncementstatus/:announcementId',IsUserAuthicated , (req, res) => {
     const { announcementId } = req.params;
 
     // SQL query to fetch the current status of the announcement
@@ -248,7 +248,7 @@ router.put('/toggleannouncementstatus/:announcementId', (req, res) => {
 // });
 
 // Announcements list with pagination and search functionality
-router.get('/announcements', (req, res) => {
+router.get('/announcements',IsUserAuthicated,  (req, res) => {
     const { page = 1, limit = 10, search = '', date = '' } = req.query; // Extract parameters from query
     const offset = (page - 1) * limit;
 

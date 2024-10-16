@@ -6,8 +6,8 @@ const multer = require('multer');
 const IsUserAuthicated = require('../Middlewares/authMiddleware')
 const upload = multer();
 
-// API for adding an announcement
-router.post('/addannouncement', IsUserAuthicated,  upload.none(), (req, res) => {
+// API for adding an announcement for a user
+router.post('/addannouncement', IsUserAuthicated ,  upload.none(), (req, res) => {
     const { announcementTitle, announcementType, announcementDate, announcementDescription } = req.body;
 
     // Validate inputs
