@@ -161,11 +161,10 @@ router.post('/verify-otp', (req, res) => {
         }
 
         // OTP is valid, generate JWT token
-        const token = jwt.sign(
-            { userId: user.userId, email: user.email }, // Payload now includes email and userId
-            process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '7d' } // Token will expire in 7 days
-        );
+    const token = jwt.sign(
+        { userId: user.userId, email: user.email }, // Payload now includes email and userId
+        process.env.ACCESS_TOKEN_SECRET
+    );
 
         // Use INSERT ... ON DUPLICATE KEY UPDATE to handle token creation or update
         const insertOrUpdateTokenQuery = `

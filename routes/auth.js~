@@ -175,6 +175,7 @@ router.post('/verify-otp', (req, res) => {
             if (err) {
                 return res.status(500).json({ error: 'Failed to store token', status: "false" });
             }
+            console.log('Token stored successfully:', token);
 
             // Send user data and token in response
             return res.status(200).json({
