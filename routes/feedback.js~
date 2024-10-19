@@ -3,46 +3,8 @@ const router = express.Router();
 const moment = require('moment-timezone'); // For timestamp handling
 const dbConfig = require("./dbconfig"); // Database configuration
 const IsUserAuthicated = require('../Middlewares/authMiddleware'); // Authentication middleware
-router.post('/addFeedback', IsUserAuthicated, (req, res) => {
-    const { name, contact_no, email, comment, userId } = req.body; // Use userId instead of user_Id
 
-    if (!name || !contact_no || !email || !comment || !userId) { // Validate userId
-        return res.status(400).json({
-            error: 'name, contact_no, email, comment, and userId are required',
-            status: "false"
-        });
-    }
-
-    // Prepare values for insertion
-    const createdDate = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss'); // Current timestamp in IST
-
-    const query = `
-        INSERT INTO feedback (name, contact_no, email, comment, userId, created)
-        VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-        name,
-        contact_no,
-        email,
-        comment,
-        userId, // Make sure to use userId
-        createdDate // Set created to the current timestamp
-    ];
-
-    // Insert the feedback into the database
-    dbConfig.query(query, values, (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message, status: "false" });
-        }
-
-        res.status(201).json({
-            message: 'Feedback added successfully',
-            status: "true",
-            feedbackId: results.insertId // Return the ID of the newly inserted feedback
-        });
-    });
-});
-
+ 
 
 
 router.delete('/deleteFeedback/:id', IsUserAuthicated, (req, res) => {

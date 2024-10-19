@@ -18,6 +18,8 @@ const postRouter = require("./routes/posts");
 const csvRouter = require("./routes/csvtodatabase");
 const cityRouter = require("./routes/city");
 const feedbackRouter = require("./routes/feedback");
+const notificationRouter = require("./routes/notification");
+
 const app = express();
 const port = 3013;
 
@@ -40,6 +42,8 @@ app.use("/apis", csvRouter);
 app.use("/apis",postRouter)
 app.use("/apis",cityRouter)
 app.use("/apis",feedbackRouter)
+app.use("/apis",notificationRouter)
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });

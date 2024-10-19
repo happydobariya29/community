@@ -5,57 +5,6 @@ const dbConfig = require("./dbconfig"); // Database configuration
 const IsUserAuthicated = require('../Middlewares/authMiddleware'); // Authentication middleware
 
 
-router.post('/addFeedback', IsUserAuthicated, (req, res) => {
-    const { name, contact_no, email, comment, userId } = req.body;
-
-    if (!name || !contact_no || !email || !comment || !userId) {
-        return res.status(400).json({
-            error: 'name, contact_no, email, comment, and userId are required',
-            status: "false"
-        });
-    }
-
-    // Check if userId exists in user table
-    const checkUserQuery = `SELECT * FROM user WHERE userId = ?`;
-    dbConfig.query(checkUserQuery, [userId], (err, userResults) => {
-        if (err) {
-            return res.status(500).json({ error: err.message, status: "false" });
-        }
-        if (userResults.length === 0) {
-            return res.status(400).json({ error: 'userId does not exist', status: "false" });
-        }
-
-        // Prepare values for insertion
-        const createdDate = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
-
-        const query = `
-            INSERT INTO feedback (name, contact_no, email, comment, userId, created)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `;
-        const values = [
-            name,
-            contact_no,
-            email,
-            comment,
-            userId,
-            createdDate
-        ];
-
-        // Insert the feedback into the database
-        dbConfig.query(query, values, (err, results) => {
-            if (err) {
-                return res.status(500).json({ error: err.message, status: "false" });
-            }
-
-            res.status(201).json({
-                message: 'Feedback added successfully',
-                status: "true",
-                feedbackId: results.insertId
-            });
-        });
-    });
-});
-
 
 
 router.delete('/deleteFeedback/:id', IsUserAuthicated, (req, res) => {
