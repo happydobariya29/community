@@ -1,0 +1,39 @@
+const admin = require('firebase-admin');
+const fcm = require('fcm-notification');
+const serviceaccount = require('../config/push-notification-key.json');
+const router  = express.Router();
+const certpath = admin.credential.cert(serviceaccount)
+const FCM  = new fcm(certpath);
+router.post('/sendnotification',sendnotification)
+const sendnotification =(req, res, next) =>{
+    try {
+        let message = {
+            notification: {
+                title: "Test Notification",
+                body: "This is a test notification",
+                sound: "default",
+                click_action: "FCM_PLUGIN_ACTIVITY",
+                icon: "fcm_push_icon"
+            },
+            data: {
+                userId: "1",
+                name: "vidhan"
+            },
+            token: req.body.fcm_token,
+        };
+        FCM.send(message, function (err, response) {
+            if (err) {
+                return res.status(500).json({"error": err})
+            } else {
+                return res.status(200).json({"response": response, "message": "notification successfully sent"})
+            }
+        });
+    }catch (err){
+        return res.status(500).json({"error": err})
+    }
+}
+
+module.exports = router;
+module.exports = {
+    sendnotification
+}
