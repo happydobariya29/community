@@ -1,39 +1,194 @@
-const admin = require('firebase-admin');
-const fcm = require('fcm-notification');
-const serviceaccount = require('../config/push-notification-key.json');
-const router  = express.Router();
-const certpath = admin.credential.cert(serviceaccount)
-const FCM  = new fcm(certpath);
-router.post('/sendnotification',sendnotification)
-const sendnotification =(req, res, next) =>{
-    try {
-        let message = {
-            notification: {
-                title: "Test Notification",
-                body: "This is a test notification",
-                sound: "default",
-                click_action: "FCM_PLUGIN_ACTIVITY",
-                icon: "fcm_push_icon"
-            },
-            data: {
-                userId: "1",
-                name: "vidhan"
-            },
-            token: req.body.fcm_token,
-        };
-        FCM.send(message, function (err, response) {
-            if (err) {
-                return res.status(500).json({"error": err})
-            } else {
-                return res.status(200).json({"response": response, "message": "notification successfully sent"})
-            }
-        });
-    }catch (err){
-        return res.status(500).json({"error": err})
-    }
-}
+//
+// const admin = require('firebase-admin');
+// const fcm = require('fcm-notification');
+// const serviceaccount = require('../config/push-notification-key.json');
+// const certpath = admin.credential.cert(serviceaccount);
+// const FCM = new fcm(certpath);
+//
+// // Function to send a notification
+// const sendnotification = (req, res) => {
+//     try {
+//         const { fcm_token } = req.body;
+//         console.log(fcm_token)
+//         if (!fcm_token) {
+//             return res.status(400).json({ error: 'FCM token is required' });
+//         }
+//
+//         let message = {
+//             notification: {
+//                 title: "Test Notification",
+//                 body: "This is a test notification",
+//             },
+//             data: {
+//                 userId: "1",
+//                 name: "vidhan"
+//             },
+//             token: fcm_token
+//         };
+//
+//         FCM.send(message, function (err, response) {
+//             if (err) {
+//                 return res.status(500).json({ error: err });
+//             } else {
+//                 return res.status(200).json({ response: response, message: "Notification successfully sent" });
+//             }
+//         });
+//     } catch (err) {
+//         return res.status(500).json({ error: err.message });
+//     }
+// };
+//
+// module.exports = sendnotification;
+// // Define the route
+// // router.post('/sendnotification', sendnotification);
+//
+//
+//
+//
 
-module.exports = router;
-module.exports = {
-    sendnotification
-}
+
+
+
+
+
+
+
+
+
+
+
+//     const admin = require('firebase-admin');
+//
+//     // Initialize the Firebase Admin SDK (make sure to update the path to your service account)
+//     const serviceAccount = require('../config/push-notification-key.json');
+//
+//     admin.initializeApp({
+//       credential: admin.credential.cert(serviceAccount),
+//       // databaseURL: "https://your-database-name.firebaseio.com" // Optional if you're using the Realtime Database
+//     });
+//
+//     const sendnotification = async (req, res) => {
+//   try {
+//     const { fcm_token } = req.body;
+//
+//     if (!fcm_token) {
+//       return res.status(400).json({ error: 'FCM token is required' });
+//     }
+//
+//     const message = {
+//       token: fcm_token,
+//       notification: {
+//         title: "Test Notification",
+//         body: "This is a test notification",
+//       },
+//       data: {
+//         userId: "1",
+//         name: "vidhan",
+//       },
+//       apns: {
+//         payload: {
+//           aps: {
+//             alert: {
+//               title: "Test Notification",
+//               body: "This is a test notification",
+//             },
+//             sound: "default",
+//             badge: 1,
+//           },
+//         },
+//       },
+//     };
+//
+//     const response = await admin.messaging().send(message);
+//     return res.status(200).json({ response, message: "Notification successfully sent" });
+//
+//   } catch (err) {
+//     console.error("Error sending notification:", err);
+//     return res.status(500).json({ error: err.message });
+//   }
+// };
+//
+// module.exports = sendnotification;
+//
+
+
+
+
+
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin SDK
+const serviceAccount = require('../config/push-notification-key.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const sendnotification = async (notificationData, res) => {
+  try {
+    const { fcm_token, device_type, moduleName, Title, Description } = notificationData.body;
+    console.log(fcm_token)
+    // Check if FCM token is provided
+    if (!fcm_token) {
+      return res.status(400).json({ error: 'FCM token is required' });
+    }
+
+    // Check if device type is provided
+    if (!device_type || (device_type !== 'android' && device_type !== 'ios')) {
+      return res.status(400).json({ error: 'Device type must be either "android" or "ios"' });
+    }
+
+        // Common notification message content
+    const notificationMessage = {
+      title: `${Title}`,
+      body: `Check out the latest ${moduleName} added. Tap to view details.`,
+    };
+
+    const dataPayload = {
+      Title: Title,
+      moduleName: moduleName,
+      Description: Description,
+    };
+
+    let message = {
+      token: fcm_token,
+      notification: notificationMessage,
+      data: dataPayload,
+    };
+
+    // Handle notification logic based on device type (Android or iOS)
+    if (device_type === 'android') {
+      message.android = {
+        notification: {
+          title: notificationMessage.title,
+          body: notificationMessage.body,
+          sound: "default",
+        },
+        priority: "high",
+      };
+    } else if (device_type === 'ios') {
+      message.apns = {
+        payload: {
+          aps: {
+            alert: {
+              title: notificationMessage.title,
+              body: notificationMessage.body,
+            },
+            sound: "default",
+            badge: 1,
+          },
+        },
+      };
+    }
+
+    // Send the notification
+    const response = await admin.messaging().send(message);
+    return res.status(200).json({ response, message: "Notification successfully sent" });
+
+  } catch (err) {
+    console.error("Error sending notification:", err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = sendnotification;

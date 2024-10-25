@@ -5,9 +5,10 @@ const dbConfig = require("./dbconfig");
 const multer = require('multer');
 const IsUserAuthicated = require('../Middlewares/authMiddleware')
 const upload = multer();
+const sendnotification = require('./pushnotification');
 
-// API for adding an announcement for a user
-router.post('/addannouncement', IsUserAuthicated ,  upload.none(), (req, res) => {
+
+router.post('/addannouncement', IsUserAuthicated, (req, res) => {
     const { announcementTitle, announcementType, announcementDate, announcementDescription } = req.body;
 
     // Validate inputs
@@ -33,6 +34,74 @@ router.post('/addannouncement', IsUserAuthicated ,  upload.none(), (req, res) =>
 
         // Successfully added new announcement
         res.status(201).json({ message: 'Announcement added successfully', status: "true", announcementId: results.insertId });
+
+        // After adding announcement, fetch tokens from the user table
+        const tokenQuery = `SELECT token, userId FROM user WHERE token IS NOT NULL`;
+        dbConfig.query(tokenQuery, (err, tokens) => {
+            if (err) {
+                console.error('Error fetching user tokens:', err);
+                return; // Do not block the response to the client
+            }
+
+            // Prepare notification details
+            const notificationPromises = tokens.map(user => {
+                const { token, userId } = user;
+
+                // Check if the token or userId is undefined
+                if (!token || !userId) {
+                    console.warn('Token or userId is missing for user:', user);
+                    return Promise.resolve(); // Skip this user
+                }
+
+                // Call sendnotification function for each user token
+                   const notificationData = {
+      fcm_token: token,
+      device_type: 'android', // Default to 'android' if device type is not available
+      Title: `New Announcement: ${announcementTitle}`,
+      Description: `Stay informed! Check out the latest announcement: "${announcementTitle}". Tap to view details.`,
+      moduleName: 'Announcement',
+    };
+
+                // Send the notification
+                return sendnotification({ body: notificationData }, {
+                    status: () => ({ json: () => null }) // Mock response
+                }).then(() => {
+                    // After sending the notification, log it in the notifications table
+                    const createdAt = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+                    const moduleName = announcementType; // Using the same as the module
+                    const title = announcementTitle; // Using the announcement title
+                    const description = announcementDescription; // Using the announcement description
+
+                    const notificationQuery = `
+                        INSERT INTO notification (userId, moduleName, title, description, createdAt, status)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    `;
+                    const notificationValues = [userId, moduleName, title, description, createdAt, 0]; // Set initial status to 1
+
+                    return new Promise((resolve, reject) => {
+                        dbConfig.query(notificationQuery, notificationValues, (err, results) => {
+                            if (err) {
+                                console.error('Error logging notification:', err);
+                                reject(err);
+                            } else {
+                                resolve(results.insertId);
+                            }
+                        });
+                    });
+                }).catch(err => {
+                    console.error('Error sending notification:', err);
+                });
+            });
+
+            // Wait for all notifications to be sent and logged
+            Promise.all(notificationPromises)
+                .then(() => {
+                    console.log('All notifications sent and logged successfully');
+                })
+                .catch(err => {
+                    console.error('Error in sending or logging notifications:', err);
+                });
+        });
     });
 });
 

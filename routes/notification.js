@@ -1,35 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const moment = require('moment-timezone');
 const dbConfig = require("./dbconfig");
-const IsUserAuthicated = require('../Middlewares/authMiddleware');
-
-// Route to add notifications
-router.post('/addNotifications', (req, res) => {
-    const { userId, moduleName, description, title } = req.body;
-
-    if (!userId || !moduleName || !title || !description) {
-        return res.status(400).json({ error: 'All fields are required', status: "false" });
-    }
-
-    const createdAt = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
-    const query = `
-        INSERT INTO notification (userId, moduleName, title, description, createdAt, status)
-        VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const values = [userId, moduleName, title, description, createdAt, 1]; // Set initial status to 1
-
-    dbConfig.query(query, values, (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        return res.status(200).json({
-            message: 'Notification added successfully',
-            status: "true",
-            notificationId: results.insertId
-        });
-    });
-});
+const sendnotification = require('./pushnotification');
 
 // Endpoint to soft delete a notification
 router.put('/deleteNotification/:id', (req, res) => {
@@ -156,4 +128,5 @@ router.get('/notifications', (req, res) => {
     });
 });
 
+router.post('/sendnottifications', sendnotification)
 module.exports = router;

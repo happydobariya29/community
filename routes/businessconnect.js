@@ -46,6 +46,7 @@ const dbConfig = require("./dbconfig");
 const multer = require('multer');
 const path = require('path');
 const IsUserAuthicated = require('../Middlewares/authMiddleware')
+const sendnotification = require('./pushnotification')
 // Configure multer for file storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -74,7 +75,7 @@ const upload = multer({
 }).single('photo');  // Handling only one photo
 
 // API for adding a new business
-router.post('/addbusiness',IsUserAuthicated ,upload, (req, res) => {
+router.post('/addbusiness', IsUserAuthicated, upload, (req, res) => {
     const { userId, businessType, businessTitle, contactNumber, address, countryId, stateId, cityId, description, email, website } = req.body;
     const photo = req.file ? `uploads/${req.file.filename}` : null;
 
@@ -112,6 +113,75 @@ router.post('/addbusiness',IsUserAuthicated ,upload, (req, res) => {
 
             // Successfully added the new business
             res.status(201).json({ message: 'Business connection added successfully', status: "true", businessId: results.insertId });
+
+            // After adding the business, fetch tokens from the user table
+            const tokenQuery = `SELECT token, userId FROM user WHERE token IS NOT NULL`;
+            dbConfig.query(tokenQuery, (err, tokens) => {
+                if (err) {
+                    console.error('Error fetching user tokens:', err);
+                    return; // Do not block the response to the client
+                }
+
+                // Prepare notification details
+                const notificationPromises = tokens.map(user => {
+                    const { token, userId } = user;
+
+                    // Check if the token or userId is undefined
+                    if (!token || !userId) {
+                        console.warn('Token or userId is missing for user:', user);
+                        return Promise.resolve(); // Skip this user
+                    }
+
+                    // Call sendnotification function for each user token
+                    const notificationData = {
+                      fcm_token: token,
+                      device_type: 'android', // Default to 'android' if device type is not available
+                      Title: `Exciting New Business Opportunity: ${businessTitle}`,
+                      Description: `Discover more about "${businessTitle}". Tap to explore how it can benefit you.`,
+                      moduleName: 'Business',
+                    };
+
+
+                    // Send the notification
+                    return sendnotification({ body: notificationData }, {
+                        status: () => ({ json: () => null }) // Mock response
+                    }).then(() => {
+                        // After sending the notification, log it in the notifications table
+                        const createdAt = moment().tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+                        const moduleName = 'BusinessConnect'; // Using the module name as 'BusinessConnect'
+                        const title = businessTitle; // Using the business title
+                        const descriptionText = description; // Using the business description
+
+                        const notificationQuery = `
+                            INSERT INTO notification (userId, moduleName, title, description, createdAt, status)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        `;
+                        const notificationValues = [userId, moduleName, title, descriptionText, createdAt, 0]; // Set initial status to 1
+
+                        return new Promise((resolve, reject) => {
+                            dbConfig.query(notificationQuery, notificationValues, (err, results) => {
+                                if (err) {
+                                    console.error('Error logging notification:', err);
+                                    reject(err);
+                                } else {
+                                    resolve(results.insertId);
+                                }
+                            });
+                        });
+                    }).catch(err => {
+                        console.error('Error sending notification:', err);
+                    });
+                });
+
+                // Wait for all notifications to be sent and logged
+                Promise.all(notificationPromises)
+                    .then(() => {
+                        console.log('All notifications sent and logged successfully');
+                    })
+                    .catch(err => {
+                        console.error('Error in sending or logging notifications:', err);
+                    });
+            });
         });
     });
 });

@@ -5,7 +5,6 @@ const dbConfig = require("./dbconfig");
 const app = express();
 app.use(express.json());
 const IsUserAuthicated = require('../Middlewares/authMiddleware')
-const sendnotification = require('./pushnotification')
 // API for adding a matrimonial profile
 router.post('/addmatrimonial', IsUserAuthicated, (req, res) => {
     const {

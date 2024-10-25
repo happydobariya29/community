@@ -35,7 +35,7 @@ const upload = multer({
 // API for adding a post
 router.post('/addpost', IsUserAuthicated, upload, (req, res) => {
     const { title, description, addedBy } = req.body;
-    const photo = req.file ? `uploads/${req.file.filename}` : null;
+    const photo = req.body.photo ? `uploads/${req.body.photo}` : null;
 
     // Validate required inputs
     if (!title || !description || !addedBy) {
